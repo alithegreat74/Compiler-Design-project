@@ -5,44 +5,68 @@
 #include <string>
 #include <sstream>
 
-using TokenCheckFunction = bool(*)(const std::string&);
-
 class Tokenizer {
 private:
-	static const char* fileLocation;
-	// A dictionary for the tokens that are static and can't change in the code
-	static std::map<std::string, std::string> staticDictionary;	
-	// A dictionary for the tokens that are dynamic and can change in the code
-	static  std::map<std::string, TokenCheckFunction> dynamicDictionary;
-
-
-
-
+    static std::map<std::string, std::string> staticDictionary;
+    static std::map<std::string, bool(*)(const std::string&)> dynamicDictionary;
 
 public:
-	static void Init(const char* location);
-	static void ReadTokens();
-	
-	__forceinline static std::string GetToken(std::string id) {
-		//If this is the first time the Get Token method is getting called, and the map is empty, read the file
-		if (staticDictionary.empty()) {
-			ReadTokens();
-		}
-		//If the key doesn't exist in the static map, check the dynamic map
-		if (staticDictionary[id] == "") {
-			for (const auto& pair : dynamicDictionary) {
-				if (pair.second(id))
-					return pair.first;
-			}
-			return "T_Id";
-		}
-		else
-		{
-			return staticDictionary[id];
-		}
-
-	};
-
+    static void Init();
+    static void ReadTokens();
+    static std::string GetToken(const std::string& id);
 };
 
+class Scanner {
+private:
+    static char currentBuffer;
+    static char nextBuffer;
+
+public:
+    static void Scan(const char* fileLocation);
+};
+
+
+
+// Declare forwarding
+class State;
+class Statemachine;
+class Lexer;
+// Declare forwarding
+
+// Creating a class to handle our States
+class Statemachine {
+public:
+    //Keeping track of the current state
+    State* currentState; 
+    void Init(State* firstState); 
+    void ChangeState(State* newState); 
+};
+
+
+//Creating an abstract class to derive each state from it
+class State {
+protected:
+    Statemachine* stateMachine; 
+    Lexer* lexer;
+public:
+    void Init(Statemachine* stateMachine, Lexer* lexer); 
+    virtual void Update(); 
+};
+
+//This is the base state for our statemachine
+class NormalState :public State {
+   
+public:
+    void Update()override;
+};
+
+//declaring an instance of all the states and the statemachine so we can start our state pattern design
+class Lexer {
+public:
+    NormalState* normalState;
+    Statemachine* stateMachine;
+    Lexer();
+    void Update();
+
+};
 
