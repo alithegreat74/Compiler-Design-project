@@ -7,22 +7,22 @@
 
 class Tokenizer {
 private:
-    static std::map<std::string, std::string> staticDictionary;
-    static std::map<std::string, bool(*)(const std::string&)> dynamicDictionary;
+    static std::map<std::string, std::string> dictionary;
+
 
 public:
-    static void Init();
     static void ReadTokens();
     static std::string GetToken(const std::string& id);
 };
 
 class Scanner {
 private:
-    static char currentBuffer;
-    static char nextBuffer;
+    static std::string currentBuffer;
+    static std::string nextBuffer;
 
 public:
     static void Scan(const char* fileLocation);
+
 };
 
 
@@ -48,25 +48,38 @@ class State {
 protected:
     Statemachine* stateMachine; 
     Lexer* lexer;
+    std::string lexeme;
 public:
     void Init(Statemachine* stateMachine, Lexer* lexer); 
-    virtual void Update(); 
+    virtual void Update(std::string currentBuffer,std::string nextBuffer);
+    void Print(std::string token) const;
 };
 
 //This is the base state for our statemachine
 class NormalState :public State {
    
 public:
-    void Update()override;
+    void Update(std::string currentBuffer, std::string nextBuffer)override;
 };
 
 //declaring an instance of all the states and the statemachine so we can start our state pattern design
 class Lexer {
 public:
+    //This is the string which will be displayed at the end
+    std::string output;
+    //This is the string which will be displayed at the end
+    
+    //States
     NormalState* normalState;
+    //States
+    
+    //Statemachine
     Statemachine* stateMachine;
+    //Statemachine
+
     Lexer();
-    void Update();
+
+    void Update(std::string currentBuffer, std::string nextBuffer);
 
 };
 

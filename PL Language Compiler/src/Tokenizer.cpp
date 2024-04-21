@@ -5,24 +5,11 @@ const std::string NONE_TOKEN = "None";
 const std::string FILE_PATH = "src/Compiler Tokens.txt";
 
 // Initialize static member variables
-char Scanner::currentBuffer = '\0';
-char Scanner::nextBuffer = '\0';
+std::string Scanner::currentBuffer = NONE_TOKEN;
+std::string Scanner::nextBuffer = NONE_TOKEN;
 
-std::map<std::string, std::string> Tokenizer::staticDictionary;
-std::map<std::string, bool(*)(const std::string&)> Tokenizer::dynamicDictionary;
+std::map<std::string, std::string> Tokenizer::dictionary;
 
-void Tokenizer::Init() {
-    dynamicDictionary = {
-        {"T_String",     [](const std::string& id) { return id.find('"') != std::string::npos; }},
-        {"T_Character",  [](const std::string& id) { return id.find("'") != std::string::npos && id.find('"') == std::string::npos; }},
-        {"T_Comment",    [](const std::string& id) { return id.find("//") != std::string::npos; }},
-        {"T_Whitespace", [](const std::string& id) { return id == " "; }},
-        {"T_Decimal",    [](const std::string& id) { return id.find(".") != std::string::npos &&
-                                                          id.find("'") == std::string::npos && id.find('"') == std::string::npos; }},
-        {"T_Hexadecimal",[](const std::string& id) { return id.find("0X") != std::string::npos &&
-                                                          id.find("'") == std::string::npos && id.find('"') == std::string::npos; }}
-    };
-}
 
 void Tokenizer::ReadTokens() {
     std::ifstream file(FILE_PATH);
@@ -37,23 +24,18 @@ void Tokenizer::ReadTokens() {
         std::string key, token;
         std::getline(ss, key, '\t');
         std::getline(ss, token, '\t');
-        staticDictionary.insert(std::make_pair(key, token));
+        dictionary.insert(std::make_pair(key, token));
     }
+    dictionary.insert(std::make_pair(" ", "T_Whitespace"));
 }
 
 std::string Tokenizer::GetToken(const std::string& id) {
-    if (staticDictionary.empty()) {
+    if (dictionary.empty()) {
         ReadTokens();
     }
-    auto staticToken = staticDictionary.find(id);
-    if (staticToken != staticDictionary.end()) {
+    auto staticToken = dictionary.find(id);
+    if (staticToken != dictionary.end()) {
         return staticToken->second;
-    }
-
-    for (const auto& pair : dynamicDictionary) {
-        if (pair.second(id)) {
-            return pair.first;
-        }
     }
     return NONE_TOKEN;
 }
@@ -68,28 +50,35 @@ bool IsNumeric(std::string val) {
 }
 
 void Scanner::Scan(const char* fileLocation) {
-    currentBuffer = '\0';
-    nextBuffer = '\0';
 
     std::ifstream file(fileLocation);
-    Tokenizer::Init();
+    
+    Lexer lexer;
+   
 
     if (!file.is_open()) {
         std::cerr << "Unable to open file at " << fileLocation << std::endl;
         return;
     }
+    char buffer = '\0';
+    while (file.get(buffer)) {
+        nextBuffer = NONE_TOKEN;
 
-    std::string tokentest;
-    while (file.get(nextBuffer)) {
-        if (Tokenizer::GetToken(tokentest + currentBuffer + nextBuffer) == NONE_TOKEN) {
-            tokentest += currentBuffer;
-            currentBuffer = nextBuffer;
+        if (currentBuffer == NONE_TOKEN) {
+            currentBuffer = buffer;
+            if(file.get(buffer))
+                nextBuffer = buffer;
         }
-        else {
-            tokentest.clear();
-        }
+        nextBuffer = buffer;
+
+        lexer.Update(currentBuffer, nextBuffer);
+        currentBuffer = nextBuffer;
     }
+    lexer.Update(currentBuffer, nextBuffer);
+    std::cout << lexer.output << "\n";
 }
+
+
 
 
 
@@ -105,19 +94,42 @@ void Statemachine::ChangeState(State* newState)
     currentState = newState;
 }
 
+//Initialization for each state
+//Each state needs a pointer to the statemachine and the lexer class
+//This helps changing the states easier
 void State::Init(Statemachine* stateMachine, Lexer* lexer)
 {
     this->stateMachine = stateMachine;
     this->lexer = lexer;
 }
-
-void State::Update()
+//Giving each state it's own Update function which will be for analyzing each lexeme
+void State::Update(std::string currentBuffer, std::string nextBuffer)
 {
 }
 
-void NormalState::Update()
+
+
+//Printing the found token for each state to the output in the lexer class
+void State::Print(std::string token) const
 {
-    std::cout << "Normal State\n";
+    lexer->output += token + ' ';
+}
+
+//override function of the State::Update
+void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
+{
+    this->lexeme += currentBuffer;
+
+    if (Tokenizer::GetToken(lexeme + nextBuffer) != NONE_TOKEN)
+        return;
+
+
+    if (Tokenizer::GetToken(lexeme) != NONE_TOKEN)
+    {
+        Print(Tokenizer::GetToken(lexeme));
+        lexeme = "";
+    }
+    
 }
 
 Lexer::Lexer()
@@ -128,7 +140,7 @@ Lexer::Lexer()
     stateMachine->Init(normalState);
 }
 
-void Lexer::Update()
+void Lexer::Update(std::string currentBuffer, std::string nextBuffer)
 {
-    stateMachine->currentState->Update();
+    stateMachine->currentState->Update(currentBuffer,nextBuffer);
 }
