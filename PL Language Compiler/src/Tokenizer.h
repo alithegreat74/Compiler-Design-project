@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <memory> //For smart pointers
 
 
 //This class will return static tokens
@@ -33,13 +34,6 @@ class Statemachine;
 class Lexer;
 #pragma endregion
 
-
-
-
-
-
-
-
 #pragma region Statemachine
 // Creating a class to handle our States
 class Statemachine {
@@ -65,9 +59,8 @@ public:
     bool Skip();
 };
 
-//This is the base state for our statemachine
+//This is the start state for analyzing each input
 class NormalState :public State {
-
 public:
     void Update(std::string currentBuffer, std::string nextBuffer)override;
 };
@@ -106,16 +99,20 @@ public:
 };
 #pragma endregion
 
+#define StateExit(token) lexeme = "";\
+                            Print(token);\
+                            stateMachine->ChangeState(lexer->normalState);
 
 
+#define StateEnter(state) lexeme = "";\
+                        stateMachine->ChangeState(state);
 
 //declaring an instance of all the states and the statemachine so we can start our state pattern design
 class Lexer {
 public:
     //This is the string which will be displayed at the end
     std::string output;
-
-    
+    int currentLine;
     //States
     NormalState* normalState;
     StringState* stringState;
@@ -126,10 +123,12 @@ public:
     //Statemachine
     Statemachine* stateMachine;
 
+    
 
     Lexer();
+    ~Lexer();
 
     void Update(std::string currentBuffer, std::string nextBuffer);
-
+    void NextLine() { currentLine++; }
 };
 

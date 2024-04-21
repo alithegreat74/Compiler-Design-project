@@ -62,8 +62,7 @@ void Scanner::Scan(const char* fileLocation) {
     }
     char buffer = '\0';
     while (file.get(buffer)) {
-        nextBuffer = NONE_TOKEN;
-
+        //If it's the first time running the lexer
         if (currentBuffer == NONE_TOKEN) {
             currentBuffer = buffer;
             if(file.get(buffer))
@@ -74,7 +73,11 @@ void Scanner::Scan(const char* fileLocation) {
             nextBuffer = buffer;
         }
 
-        lexer.Update(currentBuffer, nextBuffer);
+        if (currentBuffer == "\n")
+            lexer.NextLine();
+        else
+            lexer.Update(currentBuffer, nextBuffer);
+
         currentBuffer = nextBuffer;
     }
     lexer.Update(currentBuffer, nextBuffer);
@@ -116,7 +119,7 @@ void State::Update(std::string currentBuffer, std::string nextBuffer)
 //Printing the found token for each state to the output in the lexer class
 void State::Print(std::string token) const
 {
-    lexer->output += token + ' ';
+    lexer->output += std::to_string(lexer->currentLine)+" -> " + token + '\n';
 }
 
 bool State::Skip()
@@ -137,35 +140,30 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
         return;
     //If the input is " then go to string state
     if (currentBuffer == "\"") {
-        lexeme = ""; 
-        stateMachine->ChangeState(lexer->stringState);
+        StateEnter(lexer->stringState);
         return;
     }
     //If the input is ' then go to character state
     if (currentBuffer == "'") {
-        lexeme = "";
-        stateMachine->ChangeState(lexer->characterState);
+        StateEnter(lexer->characterState);
         return;
     }
     //If the input begins with // then go to comment state
     if (currentBuffer + nextBuffer == "//")
     {
-        lexeme = "";
-        stateMachine->ChangeState(lexer->commentState);
+        StateEnter(lexer->commentState);
         return;
     }
     //if the input starts with 0x then go to hexadecimal state 
     if (currentBuffer + nextBuffer == "0x") {
-        lexeme = "";
-        stateMachine->ChangeState(lexer->hexadecimalState);
+        StateEnter(lexer->hexadecimalState);
         return;
     }
 
     //If the input is a number and there is nothing before it then go to number state
     if (IsNumeric(currentBuffer) && lexeme.length()==1)
     {
-        lexeme = "";
-        stateMachine->ChangeState(lexer->decimalState);
+        StateEnter(lexer->decimalState);
         return;
     }
     //If the input is a static lexeme then print it
@@ -177,39 +175,12 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
     
 }
 
-void StringState::Update(std::string currentBuffer, std::string nextBuffer)
-{
-    State::Update(currentBuffer, nextBuffer);
-
-    //If the skip flag is true don't analyze
-    if (Skip())
-        return;
-
-    //If there is a normal double quotation we want to skip that and not see it as an end quote
-    if (currentBuffer.at(0) =='\\' && nextBuffer.at(0)=='\"') {
-        skip = 1;
-        return;
-    }
-
-    //If you see another " means that the string is finished
-    //So print the token and go back to normal state
-    //If you see the close double quotation print token and change the state back to normal 
-    if (currentBuffer.at(0) == '"') {
-        lexeme = "";
-        Print("T_String");
-        stateMachine->ChangeState(lexer->normalState);
-        return;
-
-    }
-    
-}
-
 Lexer::Lexer()
 {
+    stateMachine = new Statemachine();
     normalState = new NormalState();
     stringState = new StringState();
     characterState = new CharacterState();
-    stateMachine = new Statemachine();
     commentState = new CommentState();
     decimalState = new DecimalState();
     hexadecimalState = new HexadecimalState();
@@ -222,11 +193,47 @@ Lexer::Lexer()
     stateMachine->Init(normalState);
 }
 
+Lexer::~Lexer()
+{
+    delete normalState;
+    delete stringState;
+    delete characterState;
+    delete commentState;
+    delete decimalState;
+    delete hexadecimalState;
+}
+
 void Lexer::Update(std::string currentBuffer, std::string nextBuffer)
 {
     //Analyze input with the current state
     stateMachine->currentState->Update(currentBuffer,nextBuffer);
-    //std::cout << "Current Buffer: " << currentBuffer << " Next Buffer: " << nextBuffer << "\n";
+    
+        
+}
+
+void StringState::Update(std::string currentBuffer, std::string nextBuffer)
+{
+    State::Update(currentBuffer, nextBuffer);
+
+    //If the skip flag is true don't analyze
+    if (Skip())
+        return;
+
+    //If there is a normal double quotation we want to skip that and not see it as an end quote
+    if (currentBuffer.at(0) == '\\' && nextBuffer.at(0) == '\"') {
+        skip = 1;
+        return;
+    }
+
+    //If you see another " means that the string is finished
+    //So print the token and go back to normal state
+    //If you see the close double quotation print token and change the state back to normal 
+    if (currentBuffer.at(0) == '"') {
+        StateExit("T_String");
+        return;
+
+    }
+
 }
 
 void CharacterState::Update(std::string currentBuffer, std::string nextBuffer)
@@ -243,9 +250,7 @@ void CharacterState::Update(std::string currentBuffer, std::string nextBuffer)
     }
     //if character is ' then print the token and change state
     if (currentBuffer.at(0) == '\'') {
-        lexeme = "";
-        Print("T_Character");
-        stateMachine->ChangeState(lexer->normalState);
+        StateExit("T_Character");
         return;
     }
     
@@ -256,9 +261,7 @@ void CommentState::Update(std::string currentBuffer, std::string nextBuffer)
     State::Update(currentBuffer, nextBuffer);
     //If it's the next line
     if (currentBuffer == "\n"){
-        lexeme = "";
-        Print("T_Comment");
-        stateMachine->ChangeState(lexer->normalState);
+        StateExit("T_Comment");
         return;
     }
     
@@ -268,10 +271,8 @@ void DecimalState::Update(std::string currentBuffer, std::string nextBuffer)
 {
     State::Update(currentBuffer, nextBuffer);
     //If the current input is not a number then go back to nomal state
-    if (!IsNumeric(currentBuffer)) {
-        lexeme = "";
-        Print("T_Decimal");
-        stateMachine->ChangeState(lexer->normalState);
+    if (!IsNumeric(nextBuffer)) {
+        StateExit("T_Decimal");
         return;
     }
     
@@ -293,10 +294,8 @@ void HexadecimalState::Update(std::string currentBuffer, std::string nextBuffer)
         return;
     }
     //If the input is not a number or ABCDE go back to normal state
-    if (!IsNumeric(currentBuffer) || (currentBuffer.at(0) > 'F' && currentBuffer.at(0) < 'A')) {
-        lexeme="";
-        Print("T_Hexadecimal");
-        stateMachine->ChangeState(lexer->normalState);
+    if (!IsNumeric(nextBuffer) || (nextBuffer.at(0) > 'F' && nextBuffer.at(0) < 'A')) {
+        StateExit("T_Hexadecimal");
         return;
     }
 }

@@ -7,12 +7,12 @@
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:PL Language Compiler\\src\\test.c||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
-      "RelativeMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|solutionrelative:PL Language Compiler\\src\\Tokenizer.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|solutionrelative:PL Language Compiler\\src\\Tokenizer.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|solutionrelative:PL Language Compiler\\src\\Tokenizer.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{87050875-7D4F-4BC4-8342-33545AADFF47}|PL Language Compiler\\PL Language Compiler.vcxproj|E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
@@ -34,9 +34,9 @@
               "Title": "test.c",
               "DocumentMoniker": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\test.c",
               "RelativeDocumentMoniker": "PL Language Compiler\\src\\test.c",
-              "ToolTip": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\test.c*",
-              "RelativeToolTip": "PL Language Compiler\\src\\test.c*",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAYAAAA",
+              "ToolTip": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\test.c",
+              "RelativeToolTip": "PL Language Compiler\\src\\test.c",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000423|",
               "WhenOpened": "2024-04-21T08:51:44.654Z",
               "IsPinned": true,
@@ -44,26 +44,26 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 1,
               "Title": "Tokenizer.cpp",
               "DocumentMoniker": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.cpp",
               "RelativeDocumentMoniker": "PL Language Compiler\\src\\Tokenizer.cpp",
               "ToolTip": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.cpp",
               "RelativeToolTip": "PL Language Compiler\\src\\Tokenizer.cpp",
-              "ViewState": "AQIAAGYAAAAAAAAAAAAAAKoAAAAzAAAA",
+              "ViewState": "AQIAABcBAAAAAAAAAAAAALAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2024-04-16T13:54:11.793Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Tokenizer.h",
               "DocumentMoniker": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.h",
               "RelativeDocumentMoniker": "PL Language Compiler\\src\\Tokenizer.h",
               "ToolTip": "E:\\CPP\\PL Compiler\\PL-Language-Compiler\\PL Language Compiler\\src\\Tokenizer.h",
               "RelativeToolTip": "PL Language Compiler\\src\\Tokenizer.h",
-              "ViewState": "AQIAAEkAAAAAAAAAAAAAAHwAAAAnAAAA",
+              "ViewState": "AQIAAHYAAAAAAAAAAAAAAEAAAABLAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
               "WhenOpened": "2024-04-14T14:52:18.937Z",
               "EditorCaption": ""
