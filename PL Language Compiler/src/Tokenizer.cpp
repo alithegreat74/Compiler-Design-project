@@ -69,7 +69,10 @@ void Scanner::Scan(const char* fileLocation) {
             if(file.get(buffer))
                 nextBuffer = buffer;
         }
-        nextBuffer = buffer;
+        else
+        {
+            nextBuffer = buffer;
+        }
 
         lexer.Update(currentBuffer, nextBuffer);
         currentBuffer = nextBuffer;
@@ -105,6 +108,7 @@ void State::Init(Statemachine* stateMachine, Lexer* lexer)
 //Giving each state it's own Update function which will be for analyzing each lexeme
 void State::Update(std::string currentBuffer, std::string nextBuffer)
 {
+    this->lexeme += currentBuffer;
 }
 
 
@@ -118,11 +122,15 @@ void State::Print(std::string token) const
 //override function of the State::Update
 void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
 {
-    this->lexeme += currentBuffer;
-
+    State::Update(currentBuffer, nextBuffer);
     if (Tokenizer::GetToken(lexeme + nextBuffer) != NONE_TOKEN)
         return;
 
+    if (currentBuffer == "\"") {
+        lexeme = "";
+        stateMachine->ChangeState(lexer->stringState);
+        return;
+    }
 
     if (Tokenizer::GetToken(lexeme) != NONE_TOKEN)
     {
@@ -132,15 +140,45 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
     
 }
 
+void StringState::Update(std::string currentBuffer, std::string nextBuffer)
+{
+    State::Update(currentBuffer, nextBuffer);
+    //If you see another " means that the string is finished
+    //So print the token and go back to normal state
+
+    //If the normal quote flag is true don't analyze
+    if (quotation)
+    {
+        quotation = 0;
+        return;
+    }
+    //If there is a normal double quotation we want to skip that and not see it as an end quote
+    if (currentBuffer.at(0) =='\\' && nextBuffer.at(0)=='\"') {
+        quotation = 1;
+        return;
+    }
+    if (currentBuffer.at(0) == '"') {
+        lexeme = "";
+        Print("T_String");
+        stateMachine->ChangeState(lexer->normalState);
+    }
+}
+
 Lexer::Lexer()
 {
     normalState = new NormalState();
+    stringState = new StringState();
     stateMachine = new Statemachine();
     normalState->Init(stateMachine, this);
+    stringState->Init(stateMachine, this);
     stateMachine->Init(normalState);
 }
 
 void Lexer::Update(std::string currentBuffer, std::string nextBuffer)
 {
+    //Analyze input with the current state
     stateMachine->currentState->Update(currentBuffer,nextBuffer);
+    //std::cout << "Current Buffer: " << currentBuffer << " Next Buffer: " << nextBuffer << "\n";
 }
+
+

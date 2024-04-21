@@ -61,6 +61,13 @@ class NormalState :public State {
 public:
     void Update(std::string currentBuffer, std::string nextBuffer)override;
 };
+//This is a state for whenver we are trying to read a string
+class StringState :public State {
+private:
+    bool quotation;
+public:
+    void Update(std::string currentBuffer, std::string nextBuffer)override;
+};
 
 //declaring an instance of all the states and the statemachine so we can start our state pattern design
 class Lexer {
@@ -71,6 +78,7 @@ public:
     
     //States
     NormalState* normalState;
+    StringState* stringState;
     //States
     
     //Statemachine
