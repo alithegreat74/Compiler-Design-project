@@ -27,6 +27,7 @@ public:
 
 };
 
+static bool IsHex(std::string id);
 
 #pragma region Declare forwarding
 class State;
@@ -50,9 +51,9 @@ class State {
 protected:
     Statemachine* stateMachine;
     Lexer* lexer;
-    std::string lexeme;
     bool skip;
 public:
+    std::string lexeme;
     virtual void Init(Statemachine* stateMachine, Lexer* lexer);
     virtual void Update(std::string currentBuffer, std::string nextBuffer);
     void Print(std::string token) const;
@@ -99,13 +100,14 @@ public:
 };
 #pragma endregion
 
-#define StateExit(token) lexeme = "";\
-                            Print(token);\
+#define StateExit(token)    Print(token);\
+                            lexeme = "";\
                             stateMachine->ChangeState(lexer->normalState);
 
 
 #define StateEnter(state) lexeme = "";\
-                        stateMachine->ChangeState(state);
+                        stateMachine->ChangeState(state);\
+                        state->Update(currentBuffer, nextBuffer);
 
 //declaring an instance of all the states and the statemachine so we can start our state pattern design
 class Lexer {
@@ -122,12 +124,8 @@ public:
     HexadecimalState* hexadecimalState;
     //Statemachine
     Statemachine* stateMachine;
-
-    
-
     Lexer();
     ~Lexer();
-
     void Update(std::string currentBuffer, std::string nextBuffer);
     void NextLine() { currentLine++; }
 };

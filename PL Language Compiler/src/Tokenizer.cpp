@@ -75,8 +75,8 @@ void Scanner::Scan(const char* fileLocation) {
 
         if (currentBuffer == "\n")
             lexer.NextLine();
-        else
-            lexer.Update(currentBuffer, nextBuffer);
+
+        lexer.Update(currentBuffer, nextBuffer);
 
         currentBuffer = nextBuffer;
     }
@@ -111,7 +111,8 @@ void State::Init(Statemachine* stateMachine, Lexer* lexer)
 //Giving each state it's own Update function which will be for analyzing each lexeme
 void State::Update(std::string currentBuffer, std::string nextBuffer)
 {
-    this->lexeme += currentBuffer;
+    if(currentBuffer!=NONE_TOKEN && currentBuffer!="\t" && currentBuffer!="\n")
+        this->lexeme += currentBuffer;
 }
 
 
@@ -119,7 +120,7 @@ void State::Update(std::string currentBuffer, std::string nextBuffer)
 //Printing the found token for each state to the output in the lexer class
 void State::Print(std::string token) const
 {
-    lexer->output += std::to_string(lexer->currentLine)+" -> " + token + '\n';
+    lexer->output += std::to_string(lexer->currentLine)+" : " + lexeme +" -> " + token + '\n';
 }
 
 bool State::Skip()
@@ -136,6 +137,7 @@ bool State::Skip()
 void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
 {
     State::Update(currentBuffer, nextBuffer);
+
     if (Tokenizer::GetToken(lexeme + nextBuffer) != NONE_TOKEN)
         return;
     //If the input is " then go to string state
@@ -143,6 +145,7 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
         StateEnter(lexer->stringState);
         return;
     }
+    
     //If the input is ' then go to character state
     if (currentBuffer == "'") {
         StateEnter(lexer->characterState);
@@ -155,7 +158,7 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
         return;
     }
     //if the input starts with 0x then go to hexadecimal state 
-    if (currentBuffer + nextBuffer == "0x") {
+    if (currentBuffer + nextBuffer == "0X") {
         StateEnter(lexer->hexadecimalState);
         return;
     }
@@ -171,6 +174,13 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
     {
         Print(Tokenizer::GetToken(lexeme));
         lexeme = "";
+        return;
+    }
+    
+    if (Tokenizer::GetToken(nextBuffer) != NONE_TOKEN && lexeme.length() > 0) {
+        Print("T_Id");
+        lexeme = "";
+        return;
     }
     
 }
@@ -262,6 +272,7 @@ void CommentState::Update(std::string currentBuffer, std::string nextBuffer)
     //If it's the next line
     if (currentBuffer == "\n"){
         StateExit("T_Comment");
+        lexer->NextLine();
         return;
     }
     
@@ -294,8 +305,20 @@ void HexadecimalState::Update(std::string currentBuffer, std::string nextBuffer)
         return;
     }
     //If the input is not a number or ABCDE go back to normal state
-    if (!IsNumeric(nextBuffer) || (nextBuffer.at(0) > 'F' && nextBuffer.at(0) < 'A')) {
+    if (!IsHex(nextBuffer))
+    {
         StateExit("T_Hexadecimal");
         return;
     }
+}
+
+bool IsHex(std::string id)
+{
+    for (const auto c : id) {
+        if (!std::isdigit(c))
+            if (c < 'A' || c > 'F')
+                if (c < 'a' || c>'f')
+                    return false;
+    }
+    return true;
 }
