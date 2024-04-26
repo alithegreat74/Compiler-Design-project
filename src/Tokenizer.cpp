@@ -1,4 +1,4 @@
-﻿#include "Tokenizer.h"
+#include "Tokenizer.h"
 
 // Define constants
 const std::string NONE_TOKEN = "None";
@@ -73,10 +73,10 @@ void Scanner::Scan(const char* fileLocation) {
             nextBuffer = buffer;
         }
 
-        if (currentBuffer == "\n")
-            lexer.NextLine();
 
         lexer.Update(currentBuffer, nextBuffer);
+        if (currentBuffer == "\n")
+            lexer.NextLine();
 
         currentBuffer = nextBuffer;
     }
@@ -158,13 +158,16 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
         return;
     }
     //if the input starts with 0x then go to hexadecimal state 
-    if (currentBuffer + nextBuffer == "0X") {
+    if (currentBuffer + nextBuffer == "0X" ||
+        currentBuffer + nextBuffer == "0x") {
         StateEnter(lexer->hexadecimalState);
         return;
     }
 
     //If the input is a number and there is nothing before it then go to number state
-    if (IsNumeric(currentBuffer) && lexeme.length()==1)
+    if ((IsNumeric(currentBuffer) && lexeme.length() == 1)||
+        (currentBuffer == "+" && IsNumeric(nextBuffer))||
+        (currentBuffer == "-" && IsNumeric(nextBuffer)))
     {
         StateEnter(lexer->decimalState);
         return;
@@ -187,6 +190,7 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
 
 Lexer::Lexer()
 {
+    this->currentLine = 1;
     stateMachine = new Statemachine();
     normalState = new NormalState();
     stringState = new StringState();
@@ -272,7 +276,6 @@ void CommentState::Update(std::string currentBuffer, std::string nextBuffer)
     //If it's the next line
     if (currentBuffer == "\n"){
         StateExit("T_Comment");
-        lexer->NextLine();
         return;
     }
     
