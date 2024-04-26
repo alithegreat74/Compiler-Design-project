@@ -19,6 +19,15 @@ This part will read your code and generate tokens for the syntax analyzer.
 | `static_tokens` | `e.g. semicolons, curly brackets` |
 | `dyanmic_tokens` | `e.g. strings, characters` |
 
+### Implemented lexemes
+This program can analyze these types of lexemes
+
+- Static Leximes in the file``` src/Compiler Tokens.txt```
+- Strings
+- Characters
+- One line comments
+- Decimal numbers
+- Hexadecimal numbers 
 
 
 
