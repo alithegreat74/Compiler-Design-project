@@ -22,26 +22,32 @@ void GrammarComputer::ComputeFirsts() {
 }
 std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string nonTerminal)
 {
-	std::unordered_set<std::string>first = std::unordered_set<std::string>();
 	//Iterate the productions of the given non terminal
 	for (auto production : grammar[nonTerminal]) {
 		for (auto symbol : production.symbols) {
 			//if the first symbol of the production is terminal, add it to the firsts
 			if (grammar.find(symbol) == grammar.end()) {
-				first.insert(symbol);
+				firsts[nonTerminal].insert(symbol);
 			}
 			//if it's a non terminal, recursivly find the firsts of that non terminal
 			else {
-				auto childFirsts = GetNonTerminalFirst(symbol);
-				//add the firsts of that non terminal to the firsts of the current non terminal
-				first.insert(childFirsts.begin(), childFirsts.end());
+
+				if (firsts[symbol].empty()) {
+					auto childFirsts = GetNonTerminalFirst(symbol);
+					//add the firsts of that non terminal to the firsts of the current non terminal
+					firsts[nonTerminal].insert(childFirsts.begin(), childFirsts.end());
+				}
+				else {
+					firsts[nonTerminal].insert(firsts[symbol].begin(), firsts[symbol].end());
+				}
+				
 			}
 			//we break the loop only to calculate the first symbol of the production
 			break;
 		}
 	}
 	//return the found firsts
-	return first;
+	return firsts[nonTerminal];
 }
 
 
