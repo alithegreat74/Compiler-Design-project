@@ -1,27 +1,31 @@
 #include "Syntaxical.h"
+#include "Syntaxical.h"
+#include "Syntaxical.h"
 
 // Declaring the static variables
-std::unordered_map<std::string, std::vector<Production>> GrammarComputer::grammar;
-std::unordered_map<std::string, std::unordered_set<std::string>> GrammarComputer::firsts;
+std::unordered_map<std::string, std::vector<Production>> GrammarComputer::grammar=std::unordered_map<std::string, std::vector<Production>>();
+std::unordered_map<std::string, std::unordered_set<std::string>> GrammarComputer::firsts=std::unordered_map<std::string, std::unordered_set<std::string>>();
+std::unordered_map<std::string, std::unordered_set<std::string>> GrammarComputer::follows= std::unordered_map<std::string, std::unordered_set<std::string>>();
 
 void GrammarComputer::Init(std::string path)
 {
 	ReadGrammar(path);
 	ComputeFirsts();
+	ComputeFollows();
 }
 
 void GrammarComputer::ComputeFirsts() {
 	//Iterate over all the non terminals
 	for (auto nonTerminal : grammar) {
 		std::unordered_set<std::string> childFirst = std::unordered_set<std::string>();
-		//Calculate the firsts of the given non terminal
-		childFirst = GetNonTerminalFirst(nonTerminal.first);
-		//Insert the found firsts
-		firsts[nonTerminal.first].insert(childFirst.begin(), childFirst.end());
+		//Calculate and insert the firsts of the given non terminal
+		GetNonTerminalFirst(nonTerminal.first);
 	}
 }
 std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string nonTerminal)
 {
+	
+
 	//Iterate the productions of the given non terminal
 	for (auto production : grammar[nonTerminal]) {
 		for (auto symbol : production.symbols) {
@@ -51,11 +55,65 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string
 }
 
 
+
+
 void GrammarComputer::ComputeFollows()
 {
-	
+	for (auto nonTerminal : grammar) {
+		auto a=GetNonTerminalFollows(nonTerminal.first);
+	}
 }
 
+std::unordered_set<std::string> GrammarComputer::GetNonTerminalFollows(std::string nonTerminal)
+{
+	//If the follows of this non terminal is computed, then return it
+	if (follows[nonTerminal].size()>1) {
+		return follows[nonTerminal];
+	}
+	//If it's the S non terminal add the $ symbol to the follows
+	if (nonTerminal == "S") {
+		follows[nonTerminal].insert("$");
+	}
+	//Iterate over the non terminals
+	for (const auto& g : grammar) {
+		//Iterate over the productions of that non terminal
+		for (const auto& production : g.second) {
+			//Iterate over the symbols of that production
+			for (unsigned int i = 0; i < production.symbols.size(); ++i) {
+				//If the symbol is the same as the non terminal
+				if (production.symbols[i] == nonTerminal) {
+					//Case 1: If the symbol is at the end of the production
+					if (i + 1 == production.symbols.size()) {
+						if (g.first != nonTerminal) { 
+							//Add the follow of the left non terminal
+							auto followLhs = GetNonTerminalFollows(g.first);
+							follows[nonTerminal].insert(followLhs.begin(), followLhs.end());
+						}
+					}
+					else {
+						//Case 2: If the next symbol is a terminal
+						const std::string& nextSymbol = production.symbols[i + 1];
+						if (grammar.find(nextSymbol) == grammar.end()) 
+							//Add the terminal to the follows
+							follows[nonTerminal].insert(nextSymbol);
+						//Case 3: If the next symbol is a non termina
+						else {
+							//Add the first of that non terminal to the follows
+							auto firstNext = GetNonTerminalFirst(nextSymbol);
+							follows[nonTerminal].insert(firstNext.begin(), firstNext.end());
+							if (firstNext.find("0") != firstNext.end()) {
+								auto followLhs = GetNonTerminalFollows(g.first);
+								follows[nonTerminal].insert(followLhs.begin(), followLhs.end());
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return follows[nonTerminal];
+}
 
 void GrammarComputer::ShowGrammar()
 {
@@ -80,6 +138,19 @@ void GrammarComputer::ShowFirsts()
 	for (auto nonTerminal : firsts) {
 		std::cout << nonTerminal.first << " > ";
 		//Iterate and print all the firsts in that non terminal
+		for (auto symbol : nonTerminal.second) {
+			std::cout << symbol << ", ";
+		}
+		std::cout << "\n";
+	}
+}
+
+void GrammarComputer::ShowFollows()
+{
+	//Iterate all the non terminals
+	for (auto nonTerminal : follows) {
+		std::cout << nonTerminal.first << " > ";
+		//Iterate and print all the follows in that non terminal
 		for (auto symbol : nonTerminal.second) {
 			std::cout << symbol << ", ";
 		}
