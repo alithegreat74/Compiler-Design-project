@@ -6,7 +6,7 @@ V > I V | T_Return T_Id T_Semicolon V | T_Return T_Decimal T_Semicolon V | T_Ret
 W > I W | T_Return T_Id T_Semicolon W | T_Return T_True T_Semicolon W | T_Return T_False T_Semicolon W | T_If T_LP L T_RP T_LC W T_RC | O T_LC Z2 T_RC | 0
 X > I X | T_Return T_Id T_Semicolon X | T_Return T_Character T_Semicolon X | T_If T_LP L T_RP T_LC X T_RC | O T_LC Z3 T_RC | 0
 B > T_Int | T_Bool | T_Char
-D > , B T_Id D | 0
+D > T_Comma B T_Id D | 0
 E > F E'
 E' > T_AOp_PL F E' | T_AOp_MN F E' | 0
 F > G F'

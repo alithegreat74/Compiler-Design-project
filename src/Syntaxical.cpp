@@ -1,31 +1,81 @@
 #include "Syntaxical.h"
 
+// Declaring the static variables
 std::unordered_map<std::string, std::vector<Production>> GrammarComputer::grammar;
+std::unordered_map<std::string, std::unordered_set<std::string>> GrammarComputer::firsts;
 
 void GrammarComputer::Init(std::string path)
 {
 	ReadGrammar(path);
+	ComputeFirsts();
 }
 
-void GrammarComputer::ComputeFirst()
+void GrammarComputer::ComputeFirsts() {
+	//Iterate over all the non terminals
+	for (auto nonTerminal : grammar) {
+		std::unordered_set<std::string> childFirst = std::unordered_set<std::string>();
+		//Calculate the firsts of the given non terminal
+		childFirst = GetNonTerminalFirst(nonTerminal.first);
+		//Insert the found firsts
+		firsts[nonTerminal.first].insert(childFirst.begin(), childFirst.end());
+	}
+}
+std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string nonTerminal)
 {
-	//Finds the firsts of the grammar 
+	std::unordered_set<std::string>first = std::unordered_set<std::string>();
+	//Iterate the productions of the given non terminal
+	for (auto production : grammar[nonTerminal]) {
+		for (auto symbol : production.symbols) {
+			//if the first symbol of the production is terminal, add it to the firsts
+			if (grammar.find(symbol) == grammar.end()) {
+				first.insert(symbol);
+			}
+			//if it's a non terminal, recursivly find the firsts of that non terminal
+			else {
+				auto childFirsts = GetNonTerminalFirst(symbol);
+				//add the firsts of that non terminal to the firsts of the current non terminal
+				first.insert(childFirsts.begin(), childFirsts.end());
+			}
+			//we break the loop only to calculate the first symbol of the production
+			break;
+		}
+	}
+	//return the found firsts
+	return first;
 }
 
-void GrammarComputer::ComputeFollow()
+
+void GrammarComputer::ComputeFollows()
 {
-	//Finds the follows of the grammar
+	
 }
+
 
 void GrammarComputer::ShowGrammar()
 {
+	//iterate all the non terminlas
 	for (auto g : grammar) {
 		std::cout << g.first << " > ";
+		//Iterate all the productions
 		for (auto p : g.second) {
+			//Iterate and print all the symbols in that production
 			for (auto s : p.symbols) {
 				std::cout << s<<" ";
 			}
 			std::cout << "| ";
+		}
+		std::cout << "\n";
+	}
+}
+
+void GrammarComputer::ShowFirsts()
+{
+	//Iterate all the non terminals
+	for (auto nonTerminal : firsts) {
+		std::cout << nonTerminal.first << " > ";
+		//Iterate and print all the firsts in that non terminal
+		for (auto symbol : nonTerminal.second) {
+			std::cout << symbol << ", ";
 		}
 		std::cout << "\n";
 	}
@@ -70,3 +120,4 @@ void GrammarComputer::ReadGrammar(std::string path)
 		produciton.symbols.clear();
 	}
 }
+
