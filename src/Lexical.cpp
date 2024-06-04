@@ -1,4 +1,4 @@
-#include "Tokenizer.h"
+#include "Lexical.h"
 
 // Define constants
 const std::string NONE_TOKEN = "None";

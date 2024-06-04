@@ -1,0 +1,31 @@
+﻿S > A S | K T_Semicolon S | 0
+A > T_Int T_Id T_LP C T_RP T_LC V T_RC | T_Bool T_Id T_LP C T_RP T_LC W T_RC | T_Char T_Id T_LP C T_RP T_LC X T_RC
+K > T_Int T_Id T_Assign E R | T_Bool T_Id T_Assign T_True T | T_Bool T_Id T_Assign T_False T | T_Char T_Id T_Assign T_Character U | T_Char T_Id T_LB E T_RB T_Assign T_String U | T_Int H R | T_Bool H T | T_Char H U
+C > B T_Id D | 0
+V > I V | T_Return T_Id T_Semicolon V | T_Return T_Decimal T_Semicolon V | T_Return T_hexadecimal T_Semicolon V | T_If T_LP L T_RP T_LC V T_RC V | O T_LC Z T_RC | 0
+W > I W | T_Return T_Id T_Semicolon W | T_Return T_True T_Semicolon W | T_Return T_False T_Semicolon W | T_If T_LP L T_RP T_LC W T_RC | O T_LC Z2 T_RC | 0
+X > I X | T_Return T_Id T_Semicolon X | T_Return T_Character T_Semicolon X | T_If T_LP L T_RP T_LC X T_RC | O T_LC Z3 T_RC | 0
+B > T_Int | T_Bool | T_Char
+D > , B T_Id D | 0
+E > F E'
+E' > T_AOp_PL F E' | T_AOp_MN F E' | 0
+F > G F'
+F' > T_AOp_ML G F' | T_AOp_DV G F' | 0
+G > T_Id | T_Decimal | T_Hexadecimal | (E)
+H > T_ID | T_ID T_LB E T_RB
+I > H T_Assign J T_Semicolon | K T_Semicolon | P T_Semicolon
+J > E | T_True | T_False | T_Character | T_String
+P > T_Print T_LP T_String Q T_RP
+R > T_Comma T_Id T_Assign E R | T_Comma H R | 0
+T > T_Comma T_Id T_Assign T_True T | T_Comma T_Id T_Assign T_False T | T_Comma H T | 0
+U > T_Comma T_Id T_Assign T_Character U | T_Comma T_Id T_LB E T_RB T_Assign T_String U | T_Comma H U | 0
+L > M L'
+L' > T_LOp_AND M L' | T_LOp_OR M L' | 0
+M > T_Id T_ROp_E J | T_Id T_ROp_NE J | id T_ROp_G N | id T_ROp_L N | id T_ROp_GE N | id T_ROp_LE N | T_ROp_NOT M
+N > T_Id | T_Decimal | T_Hexadecimal | T_Char | T_String
+O > T_For T_LP T_Int T_Id T_Assign E T_Semicolon L T_Semicolon T_Id T_Assign E T_RP | T_For T_LP T_Id T_Assign E T_Semicolon L T_Semicolon T_Id T_Assign E T_RP
+Q > T_Comma T_Id Q | 0
+Z > Y Z | T_Return T_Id T_Semicolon Z | T_Return T_Decimal T_Semicolon Z | T_Return T_Hexadecimal T_Semicolon Z | 0
+Z2 > Y Z2 | T_Return T_Id T_Semicolon Z2 | T_Return T_True T_Semicolon Z2 | T_Return T_False T_Semicolon Z2 | 0
+Z3 > Y Z3 | T_Return T_Id T_Semicolon Z3 | T_Return T_Character T_Semicolon Z3 | 0
+Y > T_If T_LP L T_RP T_LC Y T_RC | T_Break T_Semicolon | T_Continue T_Semicolon | I
