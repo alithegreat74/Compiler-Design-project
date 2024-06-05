@@ -5,7 +5,9 @@
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
+#include <algorithm>
 #include <vector>
+#include <stack>
 
 //The symbols that a non terminal produces
 struct Production
@@ -37,6 +39,8 @@ private:
 	static void ShowGrammar();
 	//Prints the firsts
 	static void ShowFirsts();
+	//Checks if each cell in the table has more than 1 value
+	static void CheckParseTable();
 	//Prints the follows
 	static void ShowFollows();
 	//Reads the Grammar File
@@ -44,17 +48,17 @@ private:
 	//Recursive function that calculates the firsts of the given non terminal
 	static std::unordered_set<std::string> GetNonTerminalFirst(std::string nonTerminal);
 	//This function will calculate the firsts of a Production
-	static std::unordered_set<std::string> GetProductionFirsts(Production& production);
+	static std::unordered_set<std::string> GetProductionFirsts(const Production& production);
 	//Recursive Function that calculates the follows of the given non terminal
-	static std::unordered_set<std::string> GetNonTerminalFollows(std::string nonTerminal);
+	static std::unordered_set<std::string> GetNonTerminalFollows(const std::string& nonTerminal);
 };
 
 class Parser {
 public:
 	Parser();
-	~Parser();
+	void Parse();
 private:
-	std::string ReadTokens(std::string filePath) const;
-	std::vector<Token>tokens;
+	void ReadTokens(std::string filePath);
+	std::vector<std::string>tokens;
 
 };
