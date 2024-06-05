@@ -1,17 +1,22 @@
 #include "Syntaxical.h"
 #include "Syntaxical.h"
-#include "Syntaxical.h"
 
 // Declaring the static variables
 std::unordered_map<std::string, std::vector<Production>> GrammarComputer::grammar=std::unordered_map<std::string, std::vector<Production>>();
 std::unordered_map<std::string, std::unordered_set<std::string>> GrammarComputer::firsts=std::unordered_map<std::string, std::unordered_set<std::string>>();
 std::unordered_map<std::string, std::unordered_set<std::string>> GrammarComputer::follows= std::unordered_map<std::string, std::unordered_set<std::string>>();
+std::unordered_map<std::string, std::vector<Production>> GrammarComputer::parseTable = std::unordered_map<std::string, std::vector<Production>>();
 
-void GrammarComputer::Init(std::string path)
+//Defining constants
+const std::string GRAMMAR_FILE_PATH = "src/Grammar.txt";
+const std::string TOKENS_FILE_PATH = "src/Tokens Output.txt";
+
+void GrammarComputer::Init()
 {
-	ReadGrammar(path);
+	ReadGrammar(GRAMMAR_FILE_PATH);
 	ComputeFirsts();
 	ComputeFollows();
+	ComputeParseTable();
 }
 
 void GrammarComputer::ComputeFirsts() {
@@ -24,14 +29,14 @@ void GrammarComputer::ComputeFirsts() {
 }
 std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string nonTerminal)
 {
-	
-
+	bool isEpsilonPresent = true;
 	//Iterate the productions of the given non terminal
 	for (auto production : grammar[nonTerminal]) {
 		for (auto symbol : production.symbols) {
 			//if the first symbol of the production is terminal, add it to the firsts
 			if (grammar.find(symbol) == grammar.end()) {
 				firsts[nonTerminal].insert(symbol);
+				isEpsilonPresent = false;
 			}
 			//if it's a non terminal, recursivly find the firsts of that non terminal
 			else {
@@ -40,6 +45,9 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string
 					auto childFirsts = GetNonTerminalFirst(symbol);
 					//add the firsts of that non terminal to the firsts of the current non terminal
 					firsts[nonTerminal].insert(childFirsts.begin(), childFirsts.end());
+					if (childFirsts.find("0") == childFirsts.end())
+						isEpsilonPresent = false;
+					
 				}
 				else {
 					firsts[nonTerminal].insert(firsts[symbol].begin(), firsts[symbol].end());
@@ -49,9 +57,36 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string
 			//we break the loop only to calculate the first symbol of the production
 			break;
 		}
+		if (isEpsilonPresent) {
+			firsts[nonTerminal].insert("0");
+		}
 	}
 	//return the found firsts
 	return firsts[nonTerminal];
+}
+
+std::unordered_set<std::string> GrammarComputer::GetProductionFirsts(Production& production)
+{
+	std::unordered_set<std::string> result;
+	std::string symbol = production.symbols[0];
+	//If this symbol is a non terminal add it to the firsts
+	if (grammar.find(symbol) == grammar.end()) {
+		result.insert(symbol);
+	}
+	//If it's a non terminal find the firsts of that non terminal
+	else
+	{
+		std::unordered_set<std::string> nonTerminalFirsts = GetNonTerminalFirst(symbol);
+		result.insert(nonTerminalFirsts.begin(), nonTerminalFirsts.end());
+		if (result.find("0") != result.end())
+			result.erase("0");
+	}
+	//If there is no first for this product, then return epsilon
+	if (result.empty())
+		result.insert("0");
+
+	return result;
+	
 }
 
 
@@ -61,6 +96,32 @@ void GrammarComputer::ComputeFollows()
 {
 	for (auto nonTerminal : grammar) {
 		auto a=GetNonTerminalFollows(nonTerminal.first);
+	}
+}
+
+void GrammarComputer::ComputeParseTable()
+{
+	//Iterate over all of non terminals
+	for (auto nonTerminal : grammar) {
+		//Iterate over all of the productions of that non terminal
+		for (auto production : nonTerminal.second) {
+			//Get the firsts of the product
+			std::unordered_set<std::string>productionFirsts = GetProductionFirsts(production);
+			for (auto symbol : productionFirsts) {
+				//Case 1: if the symbol is not epsilon add the product to the table
+				//The parse table structure like this: Non-Terminal terminal -> product
+				if (symbol != "0") {
+					parseTable[nonTerminal.first + " " + symbol].push_back(production);
+				}
+			}
+			//Case 2: if the symbol is epsilon, then add all the follows of the non terminal to the table
+			if (productionFirsts.find("0") != productionFirsts.end()) {
+				std::unordered_set<std::string>nonTerminalFollows = GetNonTerminalFollows(nonTerminal.first);
+				for (auto symbol : nonTerminalFollows) {
+					parseTable[nonTerminal.first + "|" + symbol].push_back(production);
+				}
+			}
+		}
 	}
 }
 
@@ -100,10 +161,11 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFollows(std::stri
 						else {
 							//Add the first of that non terminal to the follows
 							auto firstNext = GetNonTerminalFirst(nextSymbol);
+							firstNext.erase("0");
 							follows[nonTerminal].insert(firstNext.begin(), firstNext.end());
 							if (firstNext.find("0") != firstNext.end()) {
-								auto followLhs = GetNonTerminalFollows(g.first);
-								follows[nonTerminal].insert(followLhs.begin(), followLhs.end());
+								auto followNext = GetNonTerminalFollows(nextSymbol);
+								follows[nonTerminal].insert(followNext.begin(), followNext.end());
 							}
 						}
 					}
@@ -196,5 +258,19 @@ void GrammarComputer::ReadGrammar(std::string path)
 		grammar[nonTerminal].push_back(produciton);
 		produciton.symbols.clear();
 	}
+	file.close();
 }
 
+
+std::string Parser::ReadTokens(std::string filePath) const {
+	std::ifstream file(filePath);
+	if (!file.is_open()) {
+		std::cout << "Error while openning the output file at: " << filePath << "\n";
+		return "";
+	}
+	std::string buffer;
+	while (std::getline(file,buffer))
+	{
+		std::stringstream ss;
+	}
+}

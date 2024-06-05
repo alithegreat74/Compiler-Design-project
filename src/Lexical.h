@@ -21,10 +21,8 @@ class Scanner {
 private:
     static std::string currentBuffer;
     static std::string nextBuffer;
-
 public:
     static void Scan(const char* fileLocation);
-
 };
 
 static bool IsHex(std::string id);

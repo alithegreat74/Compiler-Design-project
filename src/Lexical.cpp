@@ -2,7 +2,8 @@
 
 // Define constants
 const std::string NONE_TOKEN = "None";
-const std::string FILE_PATH = "src/Compiler Tokens.txt";
+const std::string TOKEN_FILE_PATH = "src/Compiler Tokens.txt";
+const std::string OUTPUT_FILE = "src/Tokens Output.txt";
 
 // Initialize static member variables
 std::string Scanner::currentBuffer = NONE_TOKEN;
@@ -12,21 +13,28 @@ std::map<std::string, std::string> Tokenizer::dictionary;
 
 
 void Tokenizer::ReadTokens() {
-    std::ifstream file(FILE_PATH);
+    //Open the Token's file
+    std::ifstream file(TOKEN_FILE_PATH);
     if (!file.is_open()) {
-        std::cerr << "Unable to open the file " << FILE_PATH << std::endl;
+        std::cerr << "Unable to open the file " << TOKEN_FILE_PATH << std::endl;
         return;
     }
 
     std::string buffer;
+    //Read it line by line
     while (std::getline(file, buffer)) {
+
         std::stringstream ss(buffer);
         std::string key, token;
+        //Seperate the key and the token which are seperated by a tab in the file
         std::getline(ss, key, '\t');
         std::getline(ss, token, '\t');
+        //add them to the dictionary
         dictionary.insert(std::make_pair(key, token));
     }
+    //add the whitespace token which can't be added in the file so we have to add it manualy
     dictionary.insert(std::make_pair(" ", "T_Whitespace"));
+    file.close();
 }
 
 std::string Tokenizer::GetToken(const std::string& id) {
@@ -73,15 +81,28 @@ void Scanner::Scan(const char* fileLocation) {
             nextBuffer = buffer;
         }
 
-
+        //Run the lexer for buffers
         lexer.Update(currentBuffer, nextBuffer);
+        //increment the lexer line
         if (currentBuffer == "\n")
             lexer.NextLine();
 
+        //swap the buffers
         currentBuffer = nextBuffer;
     }
     lexer.Update(currentBuffer, nextBuffer);
-    std::cout << lexer.output << "\n";
+    file.close();
+
+    //Write the output to the output file
+    std::ofstream outputFile;
+    outputFile.open(OUTPUT_FILE);
+    if (!outputFile.is_open()) {
+        std::cout << "Error while opennig the output file\n";
+        return;
+    }
+    outputFile << lexer.output;
+    outputFile.close();
+
 }
 
 
@@ -120,7 +141,8 @@ void State::Update(std::string currentBuffer, std::string nextBuffer)
 //Printing the found token for each state to the output in the lexer class
 void State::Print(std::string token) const
 {
-    lexer->output += std::to_string(lexer->currentLine)+" : " + lexeme +" -> " + token + '\n';
+    if(token!="T_Whitespace" && token!="T_Comment")
+        lexer->output += std::to_string(lexer->currentLine)+" : " + lexeme +" -> " + token + '\n';
 }
 
 bool State::Skip()
