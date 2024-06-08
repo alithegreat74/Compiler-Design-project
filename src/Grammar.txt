@@ -1,6 +1,48 @@
-﻿S -> A B C D E
-A -> a | 0
-B -> b | 0
-C -> c
-D -> d | 0
-E -> e | 0
+﻿S -> <declaration> T_Semicolon S | <print> S | <for_loop> S | 0
+
+//Type declaration related grammar
+<declaration> -> <type_decleration> <type_declaration_trail>
+<type_decleration> -> <type> T_Id 
+<type_declaration_trail> -> <function_declaration> | <type_declaration_loop> | <assign> <type_declaration_loop>
+<type_declaration_loop> -> T_Comma T_Id <type_declaration_loop_trail> <type_declaration_loop>  | 0
+<type_declaration_loop_trail> -> <assign> | 0
+
+<expression> -> <assign_statement> T_Semicolon | <declaration> T_Semicolon | 0
+
+//For loop related grammar
+<for_loop> -> T_For T_LP <for_loop_trail> T_RP T_LC <for_loop_expressions> T_RC
+<for_loop_trail> -> <for_loop_variable_declaration> T_Semicolon <logical_operation> T_Semicolon <assign_statement>
+<for_loop_variable_declaration> ->  <declaration> | <assign_statement>
+<for_loop_expressions> -> <expression> <for_loop_expressions> | T_Break T_Semicolon <for_loop_expressions> | T_Continue T_Semicolon <for_loop_expressions> | <condition_for_loop> <for_loop_expressions> | 0
+
+//Assign values to variables
+<assign_statement> -> T_Id <assign> 
+<assign> -> T_Assign <values>
+<values> -> <literals> | T_Id
+
+//Funtion related grammar
+<function_declaration> -> T_LP <function_argument> T_RP T_LC T_RC
+<function_argument> -> <type_decleration> <function_argument_loop> | 0
+<function_argument_loop> -> T_Comma <type_decleration> <function_argument_loop> | 0
+
+//Print function
+<print> -> T_Print T_LP T_String <print_arguments_loop> T_RP T_Semicolon
+<print_arguments_loop> -> T_Comma T_Id <print_arguments_loop> | 0
+
+//If statements
+<condition> -> T_If T_LP <logical_operation> T_RP T_LC <expression> T_RC
+<condition_for_loop> -> T_If T_LP <logical_operation> T_RP T_LC <for_loop_expressions> T_RC
+
+/Presented types in the language
+<type> -> T_Int | T_Bool | T_Char
+
+//Literal values
+<literals> -> T_Decimal | T_Hexadecimal | T_Character | T_String | T_True | T_False
+
+//Grammar for the logical operations like && and ||
+<logical_operation> -> <relational_operation> <logical_operation_trail>
+<logical_operation_trail> -> T_LOp_AND <logical_operation> | T_LOp_OR <logical_operation> | 0
+
+//Grammar for the relational operations like a==b or a>=b
+<relational_operation> -> T_Id <relational_operation_trail>
+<relational_operation_trail> -> T_ROp_E T_Id | T_ROp_NE T_Id | T_ROp_L T_Id | T_ROp_LE T_Id | T_ROp_G T_Id | T_ROp_GE T_Id

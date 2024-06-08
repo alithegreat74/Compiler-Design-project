@@ -207,7 +207,6 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
         lexeme = "";
         return;
     }
-    
 }
 
 Lexer::Lexer()
@@ -264,7 +263,7 @@ void StringState::Update(std::string currentBuffer, std::string nextBuffer)
     //If you see another " means that the string is finished
     //So print the token and go back to normal state
     //If you see the close double quotation print token and change the state back to normal 
-    if (currentBuffer.at(0) == '"') {
+    if (currentBuffer.at(0) == '"' && lexeme.length()>1) {
         StateExit("T_String");
         return;
 
@@ -285,7 +284,7 @@ void CharacterState::Update(std::string currentBuffer, std::string nextBuffer)
         return;
     }
     //if character is ' then print the token and change state
-    if (currentBuffer.at(0) == '\'') {
+    if (currentBuffer.at(0) == '\'' && lexeme.length()>1) {
         StateExit("T_Character");
         return;
     }

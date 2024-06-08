@@ -1,8 +1,4 @@
 #include "Syntaxical.h"
-#include "Syntaxical.h"
-#include "Syntaxical.h"
-#include "Syntaxical.h"
-#include "Syntaxical.h"
 
 // Declaring the static variables
 std::unordered_map<std::string, std::vector<Production>> GrammarComputer::grammar=std::unordered_map<std::string, std::vector<Production>>();
@@ -20,6 +16,7 @@ void GrammarComputer::Init()
 	ComputeFirsts();
 	ComputeFollows();
 	ComputeParseTable();
+	CheckParseTable();
 }
 
 void GrammarComputer::ComputeFirsts() {
@@ -54,15 +51,18 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFirst(std::string
 				}
 				else {
 					firsts[nonTerminal].insert(firsts[symbol].begin(), firsts[symbol].end());
+					isEpsilonPresent = false;
 				}
 				
 			}
 			//we break the loop only to calculate the first symbol of the production
 			break;
 		}
-		if (isEpsilonPresent) {
-			firsts[nonTerminal].insert("0");
-		}
+		
+	}
+
+	if (isEpsilonPresent) {
+		firsts[nonTerminal].insert("0");
 	}
 	//return the found firsts
 	return firsts[nonTerminal];
@@ -160,12 +160,12 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFollows(const std
 						}
 						else { // Case 3: Next symbol is a non-terminal
 							auto firstNext = GetNonTerminalFirst(nextSymbol);
-							firstNext.erase("0");
-							follows[nonTerminal].insert(firstNext.begin(), firstNext.end());
 							if (firstNext.find("0") != firstNext.end()) {
 								auto followNext = GetNonTerminalFollows(nextSymbol);
 								follows[nonTerminal].insert(followNext.begin(), followNext.end());
 							}
+							firstNext.erase("0");
+							follows[nonTerminal].insert(firstNext.begin(), firstNext.end());
 						}
 					}
 				}
@@ -249,6 +249,10 @@ void GrammarComputer::ReadGrammar(std::string path)
 	std::string buffer;
 	while (std::getline(file, buffer))
 	{
+		//If you find "//" then it means it's a comment and don't read it
+		if (buffer.find("//") != std::string::npos)
+			continue;
+
 		//Create a string stream to seperate symbols
 		std::stringstream ss(buffer);
 		//Create strings to store the left most non-terminal and the arrow and the production symbols
@@ -272,7 +276,9 @@ void GrammarComputer::ReadGrammar(std::string path)
 				produciton.symbols.push_back(symbol);
 			}
 		}
-		grammar[nonTerminal].push_back(produciton);
+		if(!produciton.symbols.empty())
+			grammar[nonTerminal].push_back(produciton);
+		
 		produciton.symbols.clear();
 	}
 	file.close();
@@ -290,28 +296,23 @@ Parser::Parser()
 void Parser::Parse()
 {
 	std::stack<std::string> stack;
+	//Push the Start symbols
 	stack.push("$");
 	stack.push("S");
 	int i = 0;
 	auto& parseTable = GrammarComputer::parseTable;
 	while (!stack.empty())
 	{
+		//Case 1: the top of the stack is a non terminal
 		if (GrammarComputer::grammar.find(stack.top()) != GrammarComputer::grammar.end()) {
 			
-			auto val = parseTable.find(stack.top() + " " + tokens[i]);
-			
+			//Check if this terminal symbol and the current token have a value in the parse table
+			auto val = parseTable.find(stack.top() + " " + tokens[i].token);
 			std::vector<std::string>symbols;
-
 			if (val != parseTable.end()) {
-				symbols = parseTable[stack.top() + " " + tokens[i]][0].symbols;
-			}
-			else
-			{
-				std::cout << "Error\n";
-				break;
-			}
-			
-			if (!symbols.empty()) {
+				symbols = parseTable[stack.top() + " " + tokens[i].token][0].symbols;
+				//Pop the non terminal and replace it by the reverse of the production it holds
+				//If the production is epsilon, just ignore it
 				stack.pop();
 				if (symbols[0] != "0") {
 					std::reverse(symbols.begin(), symbols.end());
@@ -325,16 +326,19 @@ void Parser::Parse()
 				std::cout << "Error\n";
 				break;
 			}
+
 		}
+		//Case 2: if the top of the stack is a terminal
 		else
 		{
-			if (tokens[i] == stack.top()) {
+			//pop the top terminal and go check the next token
+			if (tokens[i].token == stack.top()) {
 				stack.pop();
 				i++;
 			}
 			else
 			{
-				std::cout << "Error\n";
+				std::cout << "Error expecting a "<<stack.top()<<"\n";
 				break;
 			}
 		}
@@ -350,13 +354,42 @@ void Parser::ReadTokens(std::string filePath) {
 		return;
 	}
 	std::string buffer;
-	while (file>>buffer)
+	while (std::getline(file, buffer))
 	{
-		/*std::stringstream ss(buffer);
-		std::string lexme, lineNumber, token, arrow,doubleDot;
-		ss >> lineNumber >> doubleDot >> lexme >> arrow >> token;
-		tokens.push_back({ lexme,token,std::stoi(lineNumber) });*/
-		tokens.push_back(buffer);
+		std::stringstream ss(buffer);
+		std::string lexeme, lineNumber, token, arrow,doubleDot;
+
+		//Reading the string lexemes
+		if (buffer.find("\"") != std::string::npos) {
+			std::getline(ss, lineNumber, ' '); // Read until ':'
+
+			std::getline(ss, doubleDot, ' ');
+
+			std::getline(ss, lexeme, '"');
+
+			std::getline(ss, lexeme, '"'); // Read until closing quote
+
+			ss >> arrow >> token;
+
+		}
+		//Reading the character lexemes
+		else if (buffer.find("'") != std::string::npos) {
+			std::getline(ss, lineNumber, ' '); // Read until ':'
+
+			std::getline(ss, doubleDot, ' ');
+
+			std::getline(ss, lexeme, '\'');
+
+			std::getline(ss, lexeme, '\''); // Read until closing quote
+
+			ss >> arrow >> token;
+		}
+		else {
+			ss >> lineNumber >> doubleDot >> lexeme >> arrow >> token;
+		}
+			tokens.push_back({ lexeme,token,std::stoi(lineNumber) });
+		
 	}
+	tokens.push_back({"$","$",999});
 	file.close();
 }

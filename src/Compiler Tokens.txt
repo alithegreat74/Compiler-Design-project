@@ -23,6 +23,8 @@ true	T_True
 ==	T_ROp_E
 &&	T_LOp_AND
 ||	T_LOp_OR
+|	T_Seperator
+&	T_Seperator
 !	T_LOp_NOT
 =	T_Assign
 (	T_LP

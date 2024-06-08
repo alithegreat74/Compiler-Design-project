@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 #include <fstream>
-#include <string>
 #include <sstream>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
@@ -59,6 +59,6 @@ public:
 	void Parse();
 private:
 	void ReadTokens(std::string filePath);
-	std::vector<std::string>tokens;
+	std::vector<Token>tokens;
 
 };

@@ -3,7 +3,7 @@
 #include <Syntaxical.h>
 
 int main() {
-	//Scanner::Scan("src/test.c");
+	Scanner::Scan("src/test.c");
 	Parser parser;
 	return 0;
 }
