@@ -1,4 +1,4 @@
-﻿S -> <declaration> T_Semicolon S | <print> S | <for_loop> S | 0
+﻿S -> <declaration> S | 0
 
 //Type declaration related grammar
 <declaration> -> <type_decleration> <type_declaration_trail>
@@ -7,7 +7,13 @@
 <type_declaration_loop> -> T_Comma T_Id <type_declaration_loop_trail> <type_declaration_loop>  | 0
 <type_declaration_loop_trail> -> <assign> | 0
 
-<expression> -> <assign_statement> T_Semicolon | <declaration> T_Semicolon | 0
+//Basic expressions
+<expression> -> <assign_statement> T_Semicolon | <declaration> T_Semicolon | <return> | <print>
+
+<expression_parent> -> <expression> <expression_parent> | <for_loop> <expression_parent> | <condition> <expression_parent> | 0
+
+//Return Statement
+<return> -> T_Return <values> T_Semicolon
 
 //For loop related grammar
 <for_loop> -> T_For T_LP <for_loop_trail> T_RP T_LC <for_loop_expressions> T_RC
@@ -18,10 +24,10 @@
 //Assign values to variables
 <assign_statement> -> T_Id <assign> 
 <assign> -> T_Assign <values>
-<values> -> <literals> | T_Id
+<values> -> <boolean_literals> | <arithmetic_seccond_degree> | T_Char | T_String
 
 //Funtion related grammar
-<function_declaration> -> T_LP <function_argument> T_RP T_LC T_RC
+<function_declaration> -> T_LP <function_argument> T_RP T_LC <expression_parent> T_RC
 <function_argument> -> <type_decleration> <function_argument_loop> | 0
 <function_argument_loop> -> T_Comma <type_decleration> <function_argument_loop> | 0
 
@@ -33,11 +39,11 @@
 <condition> -> T_If T_LP <logical_operation> T_RP T_LC <expression> T_RC
 <condition_for_loop> -> T_If T_LP <logical_operation> T_RP T_LC <for_loop_expressions> T_RC
 
-/Presented types in the language
+//Presented types in the language
 <type> -> T_Int | T_Bool | T_Char
 
 //Literal values
-<literals> -> T_Decimal | T_Hexadecimal | T_Character | T_String | T_True | T_False
+<boolean_literals> -> T_True | T_False
 
 //Grammar for the logical operations like && and ||
 <logical_operation> -> <relational_operation> <logical_operation_trail>
@@ -46,3 +52,12 @@
 //Grammar for the relational operations like a==b or a>=b
 <relational_operation> -> T_Id <relational_operation_trail>
 <relational_operation_trail> -> T_ROp_E T_Id | T_ROp_NE T_Id | T_ROp_L T_Id | T_ROp_LE T_Id | T_ROp_G T_Id | T_ROp_GE T_Id
+
+// Arithmetic expression
+<arithmetic_seccond_degree> -> <arithmetic_first_degree> <arithmetic_seccond_degree_trail>
+<arithmetic_seccond_degree_trail> -> T_AOp_PL <arithmetic_first_degree> <arithmetic_seccond_degree_trail> | T_AOp_MN <arithmetic_first_degree> <arithmetic_seccond_degree_trail> | 0
+
+<arithmetic_first_degree> -> <arithmetic_values> <arithmetic_first_degree_trail>
+<arithmetic_first_degree_trail> -> T_AOp_ML <arithmetic_values> <arithmetic_first_degree_trail> | T_AOp_DV <arithmetic_values> <arithmetic_first_degree_trail> | 0
+
+<arithmetic_values> -> T_Id | T_Decimal | T_Hexadecimal | T_LP <arithmetic_second_degree> T_RP

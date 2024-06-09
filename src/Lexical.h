@@ -125,6 +125,12 @@ public:
     Lexer();
     ~Lexer();
     void Update(std::string currentBuffer, std::string nextBuffer);
-    void NextLine() { currentLine++; }
+    void NextLine() { 
+        currentLine++;
+        if (stateMachine->currentState->lexeme != "" && stateMachine->currentState == normalState) {
+            stateMachine->currentState->Print("T_Id");
+            stateMachine->currentState->lexeme = "";
+        }
+    }
 };
 

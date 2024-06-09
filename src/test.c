@@ -1,7 +1,4 @@
-for (int i = 0; i < i; i = b) {
-	if (a == b) {
-		a = c;
-		break;
-	}
-	continue;
+int main() {
+	int a = 2 + 3 * 9;
+	return a;
 }

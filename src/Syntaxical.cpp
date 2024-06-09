@@ -13,8 +13,6 @@ const std::string TOKENS_FILE_PATH = "src/Tokens Output.txt";
 void GrammarComputer::Init()
 {
 	ReadGrammar(GRAMMAR_FILE_PATH);
-	ComputeFirsts();
-	ComputeFollows();
 	ComputeParseTable();
 	CheckParseTable();
 }
@@ -160,11 +158,11 @@ std::unordered_set<std::string> GrammarComputer::GetNonTerminalFollows(const std
 						}
 						else { // Case 3: Next symbol is a non-terminal
 							auto firstNext = GetNonTerminalFirst(nextSymbol);
-							if (firstNext.find("0") != firstNext.end()) {
+							if (firstNext.find("0") != firstNext.end()) { // Check if epsilon is in FIRST(nextSymbol)
 								auto followNext = GetNonTerminalFollows(nextSymbol);
 								follows[nonTerminal].insert(followNext.begin(), followNext.end());
 							}
-							firstNext.erase("0");
+							firstNext.erase("0"); // Remove epsilon
 							follows[nonTerminal].insert(firstNext.begin(), firstNext.end());
 						}
 					}
@@ -319,11 +317,12 @@ void Parser::Parse()
 					for (auto symbol : symbols) {
 						stack.push(symbol);
 					}
+
 				}
 			}
 			else
 			{
-				std::cout << "Error\n";
+				std::cout << "Error at line: "<<tokens[i].line<<" \""<<tokens[i].lexeme<<"\" is ambiguous\n";
 				break;
 			}
 
@@ -338,7 +337,7 @@ void Parser::Parse()
 			}
 			else
 			{
-				std::cout << "Error expecting a "<<stack.top()<<"\n";
+				std::cout << "Error at line: "<< tokens[i].line <<" expecting a "<<stack.top()<<"\n";
 				break;
 			}
 		}
