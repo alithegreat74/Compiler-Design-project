@@ -7,7 +7,7 @@ This is a compiler for a programing language called PL. PL is a c like language 
 ## Implemented part
 
 - Lexical Analyzer
-
+- Syntaxical Analyzer
 ## Lexical Analyzer
 
 This part will read your code and generate tokens for the syntax analyzer.
@@ -44,11 +44,19 @@ To test this project you can change the file in
 For building the program follow these steps using CMake
 
 ```bash
-  - Clone the project
-  - Open Cmake (either gui or in cmd)
-  - Open the source code path in Cmake
-  - Generate the code for you compiler
+  - run git clone https://github.com/alithegreat74/Compiler-Design-project.git
+  - makedir build
+  - cd build
+  - cmake build ..
 ```
 
 
     
+## Syntaxical Analyzer
+
+This part will Parse the generated tokens and checks the syntax of the code you wrote based on the context-free grammar written in
+```
+src/Grammar.txt 
+```
+
+
