@@ -187,9 +187,7 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
     }
 
     //If the input is a number and there is nothing before it then go to number state
-    if ((IsNumeric(currentBuffer) && lexeme.length() == 1)||
-        (currentBuffer == "+" && IsNumeric(nextBuffer))||
-        (currentBuffer == "-" && IsNumeric(nextBuffer)))
+    if (IsNumeric(currentBuffer) && lexeme.length() == 1)
     {
         StateEnter(lexer->decimalState);
         return;

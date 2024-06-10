@@ -287,7 +287,6 @@ Parser::Parser()
 {
 	ReadTokens(TOKENS_FILE_PATH);
 	GrammarComputer::Init();
-	Parse();
 	
 }
 

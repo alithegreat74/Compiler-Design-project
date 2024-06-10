@@ -3,13 +3,12 @@
 //Type declaration related grammar
 <declaration> -> <type_decleration> <type_declaration_trail>
 <type_decleration> -> <type> T_Id 
-<type_declaration_trail> -> <function_declaration> | <type_declaration_loop> | <assign> <type_declaration_loop>
+<type_declaration_trail> -> <function_declaration> | <type_declaration_loop> | T_LB <arithmetic_seccond_degree> T_RB <type_declaration_loop> | <assign> <type_declaration_loop>
 <type_declaration_loop> -> T_Comma T_Id <type_declaration_loop_trail> <type_declaration_loop>  | 0
 <type_declaration_loop_trail> -> <assign> | 0
 
 //Basic expressions
 <expression> -> <assign_statement> T_Semicolon | <declaration> T_Semicolon | <return> | <print>
-
 <expression_parent> -> <expression> <expression_parent> | <for_loop> <expression_parent> | <condition> <expression_parent> | 0
 
 //Return Statement
@@ -36,7 +35,7 @@
 <print_arguments_loop> -> T_Comma T_Id <print_arguments_loop> | 0
 
 //If statements
-<condition> -> T_If T_LP <logical_operation> T_RP T_LC <expression> T_RC
+<condition> -> T_If T_LP <logical_operation> T_RP T_LC <expression_parent> T_RC
 <condition_for_loop> -> T_If T_LP <logical_operation> T_RP T_LC <for_loop_expressions> T_RC
 
 //Presented types in the language
@@ -50,8 +49,8 @@
 <logical_operation_trail> -> T_LOp_AND <logical_operation> | T_LOp_OR <logical_operation> | 0
 
 //Grammar for the relational operations like a==b or a>=b
-<relational_operation> -> T_Id <relational_operation_trail>
-<relational_operation_trail> -> T_ROp_E T_Id | T_ROp_NE T_Id | T_ROp_L T_Id | T_ROp_LE T_Id | T_ROp_G T_Id | T_ROp_GE T_Id
+<relational_operation> -> <arithmetic_seccond_degree> <relational_operation_trail>
+<relational_operation_trail> -> T_ROp_E <arithmetic_seccond_degree> | T_ROp_NE <arithmetic_seccond_degree> | T_ROp_L <arithmetic_seccond_degree> | T_ROp_LE <arithmetic_seccond_degree> | T_ROp_G <arithmetic_seccond_degree> | T_ROp_GE <arithmetic_seccond_degree>
 
 // Arithmetic expression
 <arithmetic_seccond_degree> -> <arithmetic_first_degree> <arithmetic_seccond_degree_trail>
