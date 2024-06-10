@@ -47,7 +47,8 @@ For building the program follow these steps using CMake
   - run git clone https://github.com/alithegreat74/Compiler-Design-project.git
   - makedir build
   - cd build
-  - cmake build ..
+  - cmake ..
+  - cmake --build .
 ```
 
 
