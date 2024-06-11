@@ -359,26 +359,39 @@ void Parser::ReadTokens(std::string filePath) {
 
 		//Reading the string lexemes
 		if (buffer.find("\"") != std::string::npos) {
-			std::getline(ss, lineNumber, ' '); // Read until ':'
+			std::getline(ss, lineNumber, ' ');
 
 			std::getline(ss, doubleDot, ' ');
 
 			std::getline(ss, lexeme, '"');
 
-			std::getline(ss, lexeme, '"'); // Read until closing quote
+			char temp;
+			bool escapeNext=false;
+			while (temp=ss.get())
+			{
+				if (temp == '"' && !escapeNext)
+				{
+					break;
+				}
+				escapeNext = false;
+				if (temp == '\\') 
+					escapeNext = true;
+
+
+				lexeme += temp;
+				
+			}
 
 			ss >> arrow >> token;
 
 		}
 		//Reading the character lexemes
 		else if (buffer.find("'") != std::string::npos) {
-			std::getline(ss, lineNumber, ' '); // Read until ':'
+			std::getline(ss, lineNumber, ' '); 
 
 			std::getline(ss, doubleDot, ' ');
 
-			std::getline(ss, lexeme, '\'');
-
-			std::getline(ss, lexeme, '\''); // Read until closing quote
+			std::getline(ss, lexeme, ' ');
 
 			ss >> arrow >> token;
 		}

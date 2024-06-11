@@ -3,27 +3,32 @@
 //Type declaration related grammar
 <declaration> -> <type_decleration> <type_declaration_trail>
 <type_decleration> -> <type> T_Id 
-<type_declaration_trail> -> <function_declaration> | <type_declaration_loop> | T_LB <arithmetic_seccond_degree> T_RB <type_declaration_loop> | <assign> <type_declaration_loop>
-<type_declaration_loop> -> T_Comma T_Id <type_declaration_loop_trail> <type_declaration_loop>  | 0
+<type_declaration_trail> -> <function_declaration> | <type_declaration_loop> | T_LB <array_bracket> T_RB <type_declaration_loop_trail> <type_declaration_loop>  | <assign> <type_declaration_loop> 
+<type_declaration_loop> -> T_Comma T_Id <type_declaration_loop_trail> <type_declaration_loop>  | T_Semicolon
 <type_declaration_loop_trail> -> <assign> | 0
+<array_bracket> -> <arithmetic_seccond_degree> | 0
 
 //Basic expressions
-<expression> -> <assign_statement> T_Semicolon | <declaration> T_Semicolon | <return> | <print>
+<expression> -> <assign_statement> T_Semicolon | <declaration> | <return> | <print>
 <expression_parent> -> <expression> <expression_parent> | <for_loop> <expression_parent> | <condition> <expression_parent> | 0
+<expression_parent_no_loop> -> <expression> | <for_loop> | <condition>
+
 
 //Return Statement
 <return> -> T_Return <values> T_Semicolon
 
 //For loop related grammar
 <for_loop> -> T_For T_LP <for_loop_trail> T_RP T_LC <for_loop_expressions> T_RC
-<for_loop_trail> -> <for_loop_variable_declaration> T_Semicolon <logical_operation> T_Semicolon <assign_statement>
+<for_loop_trail> -> <for_loop_variable_declaration> <logical_operation> T_Semicolon <assign_statement>
 <for_loop_variable_declaration> ->  <declaration> | <assign_statement>
-<for_loop_expressions> -> <expression> <for_loop_expressions> | T_Break T_Semicolon <for_loop_expressions> | T_Continue T_Semicolon <for_loop_expressions> | <condition_for_loop> <for_loop_expressions> | 0
+<for_loop_expressions> -> <expression> <for_loop_expressions> | T_Break T_Semicolon <for_loop_expressions> | T_Continue T_Semicolon <for_loop_expressions> | <condition_for_loop> <for_loop_expressions> | <for_loop> <for_loop_expressions> | 0
+<for_loop_expressions_no_loop> -> <expression> | T_Break T_Semicolon | T_Continue T_Semicolon | <condition_for_loop> | <for_loop>
+
 
 //Assign values to variables
 <assign_statement> -> T_Id <assign> 
 <assign> -> T_Assign <values>
-<values> -> <boolean_literals> | <arithmetic_seccond_degree> | T_Char | T_String
+<values> -> <boolean_literals> | <arithmetic_seccond_degree> | T_Character | T_String
 
 //Funtion related grammar
 <function_declaration> -> T_LP <function_argument> T_RP T_LC <expression_parent> T_RC
@@ -35,8 +40,12 @@
 <print_arguments_loop> -> T_Comma T_Id <print_arguments_loop> | 0
 
 //If statements
-<condition> -> T_If T_LP <logical_operation> T_RP T_LC <expression_parent> T_RC
-<condition_for_loop> -> T_If T_LP <logical_operation> T_RP T_LC <for_loop_expressions> T_RC
+<condition> -> T_If T_LP <logical_operation> T_RP <one_line_condition> <condition_trail>
+<one_line_condition> -> T_LC <expression_parent> T_RC | <expression_parent_no_loop>
+<condition_trail> -> T_Else <condition_trail_trail> 
+<condition_trail_trail> -> <condition> <condition_trail_trail> | T_LC <expression_parent> T_RC
+<condition_for_loop> -> T_If T_LP <logical_operation> T_RP 
+<one_line_contion_for_loop> -> T_LC <for_loop_expressions> T_RC | <for_loop_expressions_no_loop>
 
 //Presented types in the language
 <type> -> T_Int | T_Bool | T_Char
@@ -49,14 +58,17 @@
 <logical_operation_trail> -> T_LOp_AND <logical_operation> | T_LOp_OR <logical_operation> | 0
 
 //Grammar for the relational operations like a==b or a>=b
-<relational_operation> -> <arithmetic_seccond_degree> <relational_operation_trail>
-<relational_operation_trail> -> T_ROp_E <arithmetic_seccond_degree> | T_ROp_NE <arithmetic_seccond_degree> | T_ROp_L <arithmetic_seccond_degree> | T_ROp_LE <arithmetic_seccond_degree> | T_ROp_G <arithmetic_seccond_degree> | T_ROp_GE <arithmetic_seccond_degree>
+<relational_operation> -> <arithmetic_seccond_degree> <relational_operation_trail> | T_LOp_NOT <not_relation>
+<not_relation> -> T_Id | T_LP <logical_operation> T_RP
+<relational_operation_trail> -> T_ROp_E <equality_values> | T_ROp_NE <equality_values> | T_ROp_L <arithmetic_seccond_degree> | T_ROp_LE <arithmetic_seccond_degree> | T_ROp_G <arithmetic_seccond_degree> | T_ROp_GE <arithmetic_seccond_degree>
 
 // Arithmetic expression
 <arithmetic_seccond_degree> -> <arithmetic_first_degree> <arithmetic_seccond_degree_trail>
 <arithmetic_seccond_degree_trail> -> T_AOp_PL <arithmetic_first_degree> <arithmetic_seccond_degree_trail> | T_AOp_MN <arithmetic_first_degree> <arithmetic_seccond_degree_trail> | 0
 
 <arithmetic_first_degree> -> <arithmetic_values> <arithmetic_first_degree_trail>
-<arithmetic_first_degree_trail> -> T_AOp_ML <arithmetic_values> <arithmetic_first_degree_trail> | T_AOp_DV <arithmetic_values> <arithmetic_first_degree_trail> | 0
+<arithmetic_first_degree_trail> -> T_AOp_ML <arithmetic_values> <arithmetic_first_degree_trail> | T_AOp_RM <arithmetic_values> <arithmetic_first_degree_trail> | T_AOp_DV <arithmetic_values> <arithmetic_first_degree_trail> | 0
 
-<arithmetic_values> -> T_Id | T_Decimal | T_Hexadecimal | T_LP <arithmetic_second_degree> T_RP
+<arithmetic_values> -> T_Id | T_Decimal | T_Hexadecimal | T_LP <arithmetic_seccond_degree> T_RP 
+
+<equality_values> -> <arithmetic_seccond_degree> | T_Char | T_String | <boolean_literals>

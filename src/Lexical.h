@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <memory> //For smart pointers
+
 
 
 //This class will return static tokens

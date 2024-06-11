@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 project(Compiler)
 
-add_executable(Compiler main.cpp)
 
-add_subdirectory(src)
+file(GLOB_RECURSE SRC_FILES "${CMAKE_SOURCE_DIR}/src/*.cpp")
 
-target_link_libraries(Compiler Lexical)
-target_link_libraries(Compiler Syntaxical)
+list(APPEND SRC_FILES "${CMAKE_SOURCE_DIR}/main.cpp")
+
+add_executable(Compiler ${SRC_FILES})
 
 target_include_directories(Compiler PUBLIC
                           "${PROJECT_BINARY_DIR}"
