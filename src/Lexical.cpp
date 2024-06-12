@@ -196,9 +196,14 @@ void NormalState::Update(std::string currentBuffer, std::string nextBuffer)
     //If the input is a static lexeme then print it
     if (Tokenizer::GetToken(lexeme) != NONE_TOKEN)
     {
+        if (ContainsLetters(lexeme) && ContainsLetters(nextBuffer))
+            return;
+
         Print(Tokenizer::GetToken(lexeme));
         lexeme = "";
         return;
+
+
     }
     
     if (Tokenizer::GetToken(nextBuffer) != NONE_TOKEN && lexeme.length() > 0) {
@@ -278,7 +283,7 @@ void CharacterState::Update(std::string currentBuffer, std::string nextBuffer)
     if (Skip())
         return;
     //if the character is \' dont count it as '
-    if (currentBuffer.at(0) == '\\' && nextBuffer.at(0) == '\'') {
+    if (currentBuffer.at(0) == '\\') {
         skip = 1;
         return;
     }
@@ -344,4 +349,10 @@ bool IsHex(std::string id)
                     return false;
     }
     return true;
+}
+
+bool ContainsLetters(std::string id) {
+    return std::any_of(id.begin(), id.end(), [](unsigned char c) {
+        return std::isalpha(c) || c=='_';
+        });
 }

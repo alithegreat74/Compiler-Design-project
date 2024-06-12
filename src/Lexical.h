@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-
+#include <algorithm>
 
 
 //This class will return static tokens
@@ -16,6 +16,7 @@ public:
     static std::string GetToken(const std::string& id);
 };
 
+
 //This class will read inputs and send them to our lexer
 class Scanner {
 private:
@@ -26,6 +27,8 @@ public:
 };
 
 static bool IsHex(std::string id);
+
+static bool ContainsLetters(std::string id);
 
 #pragma region Declare forwarding
 class State;

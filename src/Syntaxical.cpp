@@ -300,9 +300,10 @@ void Parser::Parse()
 	auto& parseTable = GrammarComputer::parseTable;
 	while (!stack.empty())
 	{
+
+
 		//Case 1: the top of the stack is a non terminal
 		if (GrammarComputer::grammar.find(stack.top()) != GrammarComputer::grammar.end()) {
-			
 			//Check if this terminal symbol and the current token have a value in the parse table
 			auto val = parseTable.find(stack.top() + " " + tokens[i].token);
 			std::vector<std::string>symbols;
@@ -321,8 +322,9 @@ void Parser::Parse()
 			}
 			else
 			{
-				std::cout << "Error at line: "<<tokens[i].line<<" \""<<tokens[i].lexeme<<"\" is ambiguous\n";
-				break;
+				std::cout << "Error at line: " << tokens[i].line << " \"" << tokens[i].lexeme << "\" is ambiguous\n";
+				if (!Panic(i, stack))
+					break;
 			}
 
 		}
@@ -336,8 +338,9 @@ void Parser::Parse()
 			}
 			else
 			{
-				std::cout << "Error at line: "<< tokens[i].line <<" expecting a "<<stack.top()<<"\n";
-				break;
+				std::cout << "Error at line: " << tokens[i].line << " expecting a " << stack.top() << "\n";
+				if (!Panic(i, stack))
+					break;
 			}
 		}
 		
@@ -403,4 +406,24 @@ void Parser::ReadTokens(std::string filePath) {
 	}
 	tokens.push_back({"$","$",999});
 	file.close();
+}
+
+bool Parser::Panic(int& increment, std::stack<std::string>& stack)
+{
+	increment++;
+	while (GrammarComputer::grammar.find(stack.top())==GrammarComputer::grammar.end())
+		increment++;
+	while (increment<tokens.size())
+	{
+		if (GrammarComputer::firsts[stack.top()].find(tokens[increment].token) != GrammarComputer::firsts[stack.top()].end()) 
+			return true;
+		
+		if (GrammarComputer::follows[stack.top()].find(tokens[increment].token) != GrammarComputer::follows[stack.top()].end())
+		{
+			stack.pop();
+			return true;
+		}
+		increment++;
+	}
+	return false;
 }

@@ -1,5 +1,15 @@
+bool test_function(int a, int b, bool c) {
+    if (c == true) {
+        return a + b;
+    }
+    else {
+        return a - b;
+    }
+}
+
+
 int main() {
-    bool add = true;
+    bool add = true
     char _assign1 = '=';
     char String_1[] = " + ";
     char String_2[] = " - ";
@@ -26,10 +36,12 @@ int main() {
         }
     }
 
-    print("Test string with escaped characters: ");
+    print("Test string with escaped characters: ")
     print("\\n newline, \\t tab, \\r carriage return.");
 
     print("this is\" a whole string no other token like '=' or 'else' or even \\\\comment should be recognized");
+    char back = '\\';
+    char quote = '\'';
     int _123 = 0XABCdef1230;
 
     return 0;

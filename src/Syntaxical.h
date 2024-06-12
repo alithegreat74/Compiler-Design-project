@@ -9,6 +9,7 @@
 #include <vector>
 #include <stack>
 
+
 //The symbols that a non terminal produces
 struct Production
 {
@@ -21,7 +22,6 @@ struct Token
 };
 //Give the file address of your grammar and get the information like first and follow
 class GrammarComputer {
-	
 public:
 	static void Init();
 	static std::unordered_map<std::string, std::vector<Production>> grammar;
@@ -60,5 +60,5 @@ public:
 private:
 	void ReadTokens(std::string filePath);
 	std::vector<Token>tokens;
-
+	bool Panic(int& increment,std::stack<std::string>&stack);
 };
