@@ -299,8 +299,6 @@ void Parser::Parse()
 	auto& parseTable = GrammarComputer::parseTable;
 	while (!stack.empty())
 	{
-
-
 		//Case 1: the top of the stack is a non terminal
 		if (GrammarComputer::grammar.find(stack.top()) != GrammarComputer::grammar.end()) {
 			//Check if this terminal symbol and the current token have a value in the parse table

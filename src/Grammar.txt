@@ -9,10 +9,9 @@
 <array_bracket> -> <arithmetic_seccond_degree> | 0
 
 //Basic expressions
-<expression> -> <assign_statement> T_Semicolon | <declaration> | <return> | <print>
+<expression> -> <assign_statement> T_Semicolon | <declaration> | <return> | <print> 
 <expression_parent> -> <expression> <expression_parent> | <for_loop> <expression_parent> | <condition> <expression_parent> | 0
 <expression_parent_no_loop> -> <expression> | <for_loop> | <condition>
-
 
 //Return Statement
 <return> -> T_Return <values> T_Semicolon
@@ -43,7 +42,7 @@
 <condition> -> T_If T_LP <logical_operation> T_RP <one_line_condition> <condition_trail>
 <one_line_condition> -> T_LC <expression_parent> T_RC | <expression_parent_no_loop>
 <condition_trail> -> T_Else <condition_trail_trail> | 0
-<condition_trail_trail> -> <condition> <condition_trail_trail> | T_LC <expression_parent> T_RC
+<condition_trail_trail> -> <condition> <condition_trail_trail> | T_LC <expression_parent> T_RC | <expression_parent_no_loop>
 <condition_for_loop> -> T_If T_LP <logical_operation> T_RP 
 <one_line_contion_for_loop> -> T_LC <for_loop_expressions> T_RC | <for_loop_expressions_no_loop>
 
