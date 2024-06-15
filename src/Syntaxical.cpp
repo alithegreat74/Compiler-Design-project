@@ -14,7 +14,6 @@ void GrammarComputer::Init()
 {
 	ReadGrammar(GRAMMAR_FILE_PATH);
 	ComputeParseTable();
-	CheckParseTable();
 }
 
 void GrammarComputer::ComputeFirsts() {
