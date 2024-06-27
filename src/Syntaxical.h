@@ -53,6 +53,21 @@ private:
 	static std::unordered_set<std::string> GetNonTerminalFollows(const std::string& nonTerminal);
 };
 
+struct ParseTreeNode {
+	std::string symbol;
+	std::vector<ParseTreeNode*> children;
+	ParseTreeNode(std::string symbol) {
+		this->symbol = symbol;
+		children = std::vector<ParseTreeNode*>();
+	}
+
+	~ParseTreeNode() {
+		for (auto& child : children) {
+			delete child;
+		}
+	}
+};
+
 class Parser {
 public:
 	Parser();
@@ -60,5 +75,6 @@ public:
 private:
 	void ReadTokens(std::string filePath);
 	std::vector<Token>tokens;
-	bool Panic(int& increment,std::stack<std::string>&stack);
+	bool Panic(int& increment,std::stack<ParseTreeNode*>& stack);
+	void PrintParseTree(ParseTreeNode* node,int depth)const;
 };

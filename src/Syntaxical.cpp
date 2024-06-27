@@ -291,58 +291,51 @@ Parser::Parser()
 
 void Parser::Parse()
 {
-	std::stack<std::string> stack;
-	//Push the Start symbols
-	stack.push("$");
-	stack.push("S");
+	std::stack<ParseTreeNode*> stack;
+	ParseTreeNode* root = new ParseTreeNode("S");
+	stack.push(new ParseTreeNode("$"));
+	stack.push(root);
 	int i = 0;
 	auto& parseTable = GrammarComputer::parseTable;
-	while (!stack.empty())
-	{
-		//Case 1: the top of the stack is a non terminal
-		if (GrammarComputer::grammar.find(stack.top()) != GrammarComputer::grammar.end()) {
-			//Check if this terminal symbol and the current token have a value in the parse table
-			auto val = parseTable.find(stack.top() + " " + tokens[i].token);
-			std::vector<std::string>symbols;
-			if (val != parseTable.end()) {
-				symbols = parseTable[stack.top() + " " + tokens[i].token][0].symbols;
-				//Pop the non terminal and replace it by the reverse of the production it holds
-				//If the production is epsilon, just ignore it
-				stack.pop();
-				if (symbols[0] != "0") {
-					std::reverse(symbols.begin(), symbols.end());
-					for (auto symbol : symbols) {
-						stack.push(symbol);
-					}
+	while (!stack.empty()) {
+		ParseTreeNode* topNode = stack.top();
+		std::string topSymbol = topNode->symbol;
 
+		// Case 1: the top of the stack is a non-terminal
+		if (GrammarComputer::grammar.find(topSymbol) != GrammarComputer::grammar.end()) {
+			auto val = parseTable.find(topSymbol + " " + tokens[i].token);
+			if (val != parseTable.end()) {
+				auto symbols = parseTable[topSymbol + " " + tokens[i].token][0].symbols;
+				stack.pop();
+				if (symbols[0] != "0") { // not epsilon
+					std::reverse(symbols.begin(), symbols.end());
+					for (const auto& symbol : symbols) {
+						ParseTreeNode* childNode = new ParseTreeNode(symbol);
+						topNode->children.push_back(childNode);
+						stack.push(childNode);
+					}
 				}
 			}
-			else
-			{
+			else {
 				std::cout << "Error at line: " << tokens[i].line << " \"" << tokens[i].lexeme << "\" is ambiguous\n";
-				if (!Panic(i, stack))
-					break;
+				if (!Panic(i, stack)) break;
 			}
-
 		}
-		//Case 2: if the top of the stack is a terminal
-		else
-		{
-			//pop the top terminal and go check the next token
-			if (tokens[i].token == stack.top()) {
+		// Case 2: the top of the stack is a terminal
+		else {
+			if (tokens[i].token == topSymbol) {
 				stack.pop();
 				i++;
 			}
-			else
-			{
-				std::cout << "Error at line: " << tokens[i].line << " expecting a " << stack.top() << "\n";
-				if (!Panic(i, stack))
-					break;
+			else {
+				std::cout << "Error at line: " << tokens[i].line << " expecting a " << topSymbol << "\n";
+				if (!Panic(i, stack)) break;
 			}
 		}
-		
 	}
-	std::cout << "Finished Parsing";
+	std::cout << "Finished Parsing\n";
+	PrintParseTree(root, 0);
+	delete root;
 }
 
 void Parser::ReadTokens(std::string filePath) {
@@ -405,17 +398,17 @@ void Parser::ReadTokens(std::string filePath) {
 	file.close();
 }
 
-bool Parser::Panic(int& increment, std::stack<std::string>& stack)
+bool Parser::Panic(int& increment, std::stack<ParseTreeNode*>& stack)
 {
 	increment++;
-	while (GrammarComputer::grammar.find(stack.top())==GrammarComputer::grammar.end())
+	while (GrammarComputer::grammar.find(stack.top()->symbol)==GrammarComputer::grammar.end())
 		increment++;
 	while (increment<tokens.size())
 	{
-		if (GrammarComputer::firsts[stack.top()].find(tokens[increment].token) != GrammarComputer::firsts[stack.top()].end()) 
+		if (GrammarComputer::firsts[stack.top()->symbol].find(tokens[increment].token) != GrammarComputer::firsts[stack.top()->symbol].end()) 
 			return true;
 		
-		if (GrammarComputer::follows[stack.top()].find(tokens[increment].token) != GrammarComputer::follows[stack.top()].end())
+		if (GrammarComputer::follows[stack.top()->symbol].find(tokens[increment].token) != GrammarComputer::follows[stack.top()->symbol].end())
 		{
 			stack.pop();
 			return true;
@@ -423,4 +416,15 @@ bool Parser::Panic(int& increment, std::stack<std::string>& stack)
 		increment++;
 	}
 	return false;
+}
+
+void Parser::PrintParseTree(ParseTreeNode* node, int depth) const
+{
+	for (int i = 0; i < depth; i++) {
+		std::cout << "  ";
+	}
+	std::cout << node->symbol << "\n";
+	for (auto child : node->children) {
+		PrintParseTree(child, depth + 1);
+	}
 }
